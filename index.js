@@ -25,6 +25,56 @@ const CACTI_CONFIG = [
   { width: 68 / 1.5, height: 70 / 1.5, image: "images/cactus_3.png" },
 ];
 
+let gamePaused = false;
+
+// Quiz data
+const quizQuestions = [
+  {
+    question: "What is a strong password?",
+    options: ["12345", "password", "Long with symbols", "Your name"],
+    correct: 3,
+  },
+  {
+    question: "What should you avoid clicking on?",
+    options: ["Secure websites", "Phishing links", "Legitimate emails", "Images"],
+    correct: 2,
+  },
+];
+let currentQuestionIndex = 0;
+
+function updateProgressBar(score) {
+  const progress = (score / 400) * 100;
+  document.getElementById("progress-bar").style.width = progress + "%";
+}
+
+function showQuiz() {
+  gamePaused = true;
+  document.getElementById("quiz-modal").style.display = "block";
+  const question = quizQuestions[currentQuestionIndex];
+  document.getElementById("quiz-question").textContent = question.question;
+  const buttons = document.querySelectorAll(".quiz-option");
+  question.options.forEach((option, index) => {
+    buttons[index].textContent = option;
+  });
+}
+
+function answerQuestion(selectedOption) {
+  const question = quizQuestions[currentQuestionIndex];
+  if (selectedOption === question.correct) {
+    alert("Correct!");
+    resumeGame();
+  } else {
+    alert("Incorrect! Game Over.");
+    reset();
+  }
+  document.getElementById("quiz-modal").style.display = "none";
+  currentQuestionIndex = (currentQuestionIndex + 1) % quizQuestions.length;
+}
+
+function resumeGame() {
+  gamePaused = false;
+}
+
 //Game Objects
 let player = null;
 let ground = null;
@@ -172,17 +222,24 @@ function gameLoop(currentTime) {
     requestAnimationFrame(gameLoop);
     return;
   }
+  
   const frameTimeDelta = currentTime - previousTime;
   previousTime = currentTime;
 
   clearScreen();
 
-  if (!gameOver && !waitingToStart) {
-    //Update game objects
+  if (!gameOver && !waitingToStart && !gamePaused) {
+    // Update game objects
     ground.update(gameSpeed, frameTimeDelta);
     cactiController.update(gameSpeed, frameTimeDelta);
     player.update(gameSpeed, frameTimeDelta);
-    score.update(frameTimeDelta);
+    score.update(frameTimeDelta);  // Update score
+
+    // Update progress bar and check for quiz trigger
+    const currentScore = Math.floor(score.score);
+    updateProgressBar(currentScore);
+    checkForQuiz(currentScore);
+
     updateGameSpeed(frameTimeDelta);
   }
 
@@ -192,7 +249,7 @@ function gameLoop(currentTime) {
     score.setHighScore();
   }
 
-  //Draw game objects
+  // Draw game objects
   ground.draw();
   cactiController.draw();
   player.draw();
@@ -208,7 +265,6 @@ function gameLoop(currentTime) {
 
   requestAnimationFrame(gameLoop);
 }
-
 requestAnimationFrame(gameLoop);
 
 window.addEventListener("keyup", reset, { once: true });

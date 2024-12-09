@@ -215,7 +215,25 @@ function clearScreen() {
   ctx.fillStyle = "white";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
+function checkForQuiz(score) {
+  if (score > 0 && score % 40 === 0 && !gamePaused) {
+      showQuiz();
+  }
+}
+function showQuiz() {
+  gamePaused = true;  // Pause the game
+  document.getElementById("quiz-modal").style.display = "block";  // Show quiz modal
 
+  // Load the current quiz question
+  const question = quizQuestions[currentQuestionIndex];
+  document.getElementById("quiz-question").textContent = question.question;
+
+  // Update buttons with options
+  const buttons = document.querySelectorAll(".quiz-option");
+  question.options.forEach((option, index) => {
+      buttons[index].textContent = option;
+  });
+}
 function gameLoop(currentTime) {
   if (previousTime === null) {
       previousTime = currentTime;
@@ -233,6 +251,7 @@ function gameLoop(currentTime) {
       ground.update(gameSpeed, frameTimeDelta);
       cactiController.update(gameSpeed, frameTimeDelta);
       player.update(gameSpeed, frameTimeDelta);
+      score.update(frameTimeDelta);
       score.update(frameTimeDelta);
 
       const currentScore = Math.floor(score.score);

@@ -216,6 +216,7 @@ function clearScreen() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 function checkForQuiz(score) {
+  console.log("Checking for quiz at score:", score);
   if (score > 0 && score % 40 === 0 && !gamePaused) {
       showQuiz();
   }
@@ -235,6 +236,7 @@ function showQuiz() {
   });
 }
 function gameLoop(currentTime) {
+  console.log("Game loop running");
   if (previousTime === null) {
       previousTime = currentTime;
       requestAnimationFrame(gameLoop);
